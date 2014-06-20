@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>VTVLsim</title>
+        <link href='css/main.css' rel='stylesheet' type='text/css'>
+        <style>
+          body {
+              margin: 0px;
+              font-family: 'Coda', cursive;
+          }
+          canvas {
+              cursor: default;
+              -webkit-user-select: none;
+               -khtml-user-select: none;
+                 -moz-user-select: none;
+                  -ms-user-select: none;
+                   -o-user-select: none;
+                      user-select: none;
+          }
+        </style>
+	</head>
+	<body>
+      <img id="aiming_cross" src="aiming-cross.png" style="position: fixed; top: 50%; left: 50%; margin-top: -8px; margin-left: -8px; opacity: 0.2; pointer-events:none; display: none;"/>
+	  <div id="container">
+	  </div>
+      <div style="position: absolute; top: 0px; right: 0%">
+        <span id="status" class="vtvlsim-status">...</span><br/>
+        <div>
+          <a href="https://twitter.com/share?text=Vertical%20takeoff%2C%20vertical%20landing%20rocket%20simulation%20%23VTVLsim%20%23webgl&url=http%3A%2F%2Fcrackleware.nu%2Fp%2FVTVLsim%2F&via=crackleware" class="aimg" title="tweet" target="_blank"><img src="twitter_logo_blue.png" style="height: 24px"/></a><br/>
+          <a href="https://github.com/crackleware/VTVLsim" class="aimg" title="repo" target="_blank"><img src="GitHub-Mark.png" style="height: 28px"/></a><br/>
+          <a href="../../a/VTVLsim" style="font-size: 12px; color: white" target="_blank">History</a><br/>
+        </div>
+      </div>
+	</body>
+    <!-- <script src="http://127.0.0.1:8080/skewer"></script> -->
+	<script src="js/external/jquery/dist/jquery.min.js"></script>
+	<script src="js/external/three.js/build/three.min.js"></script>
+	<script src="js/external/three.js/examples/js/Detector.js"></script>
+	<script src="js/external/sprintf.js/src/sprintf.js"></script>
+	<script src="js/controls.js"></script>
+	<script src="js/setup.js"></script>
+	<script src="js/panels.js"></script>
+	<script src="js/simulator.js"></script>
+	<script src="js/physics.js"></script>
+	<script src="js/rocket.js"></script>
+	<script src="js/viz.js"></script>
+	<script src="js/tests.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/window.js"></script>
+	<script src="js/inspector.js"></script>
+	<script src="js/instructions.js"></script>
+	<script src="js/ui.js"></script>
+	<script>
+      try {
+        PointerLockControls = nu_crackleware_vtvlsim_PointerLockControls;
+
+        Setup = new nu_crackleware_vtvlsim_Setup(
+          PointerLockControls, 
+          Detector, 
+          THREE, 
+          $
+        );
+
+        Panels = new nu_crackleware_vtvlsim_Panels(THREE, $);
+
+        dbg = new Panels.Dbg(Setup.scene);
+        if (1) dbg.remove();
+
+        Simulator = new nu_crackleware_vtvlsim_Simulator(THREE);
+
+        Physics = new nu_crackleware_vtvlsim_Physics(THREE);
+
+        Rocket = new nu_crackleware_vtvlsim_Rocket(
+          Physics.MassNode,
+          Physics.RigidLineConstraints,
+          Physics.RigidDistanceConstraint,
+          Physics.RigidGroundConstraint,
+          Simulator.Simulator,
+          dbg,
+          THREE
+        );
+
+        Viz = new nu_crackleware_vtvlsim_Viz(
+          Panels,
+          Panels.Graph,
+          Physics,
+          Physics.RigidLineConstraints,
+          Physics.RigidDistanceConstraint,
+          THREE
+        );
+
+        Tests = new nu_crackleware_vtvlsim_Tests(
+          Physics.Environment,
+          Simulator.Simulator,
+          Rocket.Rocket,
+          Physics.MassNode,
+          Physics.RigidGroundConstraint, 
+          THREE
+        );
+
+        if (1) Main = new nu_crackleware_vtvlsim_Main(
+          Setup,
+          Tests,
+          Panels.Graph,
+          Viz.RocketGraphs,
+          Panels.Slider,
+          Physics.Environment, 
+          Rocket.Rocket, 
+          Viz.RocketViz, 
+          Simulator.Simulator,
+          Rocket.ThrustController,
+          Viz.ThrustControllerViz, 
+          dbg,
+          THREE,
+          $
+        );
+
+        Object.keys(localStorage).forEach(function (k) {
+          var m = k.match(/^changed:(.*)/);
+          if (m) {
+            var pathexpr = m[1];
+            var v = localStorage[k];
+            try {
+              var code = pathexpr+' = '+v;
+              console.log('executing: '+code);
+              eval(code); 
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        });
+
+        Window = new nu_crackleware_vtvlsim_Window($).Window;
+        Inspector = new nu_crackleware_vtvlsim_Inspector(Window, $).Inspector;
+        Instructions = new nu_crackleware_vtvlsim_Instructions(Window, $).Instructions;
+
+      } catch (e) {
+        console.log(e.stack);
+      }
+
+      UI = new nu_crackleware_vtvlsim_UI(
+        Setup,
+        Main,
+        Inspector,
+        Instructions,
+        $
+      );
+
+    </script>
+</html>

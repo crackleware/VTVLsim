@@ -1,0 +1,12 @@
+[submodule "jquery"]
+      path = js/external/jquery
+      url = https://github.com/jquery/jquery
+
+[submodule "three.js"]
+      path = js/external/three.js
+      url = https://github.com/mrdoob/three.js
+
+[submodule "sprintf.js"]
+      path = js/external/sprintf.js
+      url = https://github.com/alexei/sprintf.js
+
