@@ -6,6 +6,8 @@ nu_crackleware_vtvlsim_Viz = function (
     RigidDistanceConstraint,
     THREE
 ) {
+    function extend_array(arr, elements) { Array.prototype.push.apply(arr, elements); }
+
     var recomputeGeom = this.recomputeGeom = function (geom) {
         geom.computeFaceNormals();
         geom.computeVertexNormals();
@@ -17,7 +19,7 @@ nu_crackleware_vtvlsim_Viz = function (
         this.scene = scene;
 
         this.material = new THREE.MeshLambertMaterial({
-            color: 0xff0000, ambient: 0xff0000
+            color: 0xff0000,
         });
         this.material.transparent = true;
         this.material.opacity = 0.7;
@@ -26,7 +28,6 @@ nu_crackleware_vtvlsim_Viz = function (
         this.geom = new THREE.SphereGeometry(radius, segments, rings);
         this.sphere = new THREE.Mesh(this.geom, this.material);
         this.scene.add(this.sphere);
-        this.sphere.position = this.node.position;
     };
 
     MassNodeViz.prototype.remove = function () {
@@ -48,6 +49,7 @@ nu_crackleware_vtvlsim_Viz = function (
         this.sphere.scale.x = r;
         this.sphere.scale.y = r;
         this.sphere.scale.z = r;
+        this.sphere.position.copy(this.node.position);
     };
 
     var RocketViz = this.RocketViz = function (rocket, scene) {
@@ -71,10 +73,8 @@ nu_crackleware_vtvlsim_Viz = function (
     RocketViz.prototype.recreate = function () {
         var self = this;
 
-        if (this.rocketBody) 
+        if (this.rocketBody)
             this.remove();
-
-        this.rocketGeomBody = new THREE.Geometry();
 
         var nodeById = {};
         var links = {};
@@ -106,19 +106,24 @@ nu_crackleware_vtvlsim_Viz = function (
         }
 
         var visualizedLinks = {};
+        this.bodyVertices = [];
         for (var k in links) {
             var link = links[k];
             var i1 = link[0], i2 = link[1];
             if (!visualizedLinks[[i1, i2]]) {
                 visualizedLinks[[i1, i2]] = true;
-                this.rocketGeomBody.vertices.push(nodeById[i1].position);
-                this.rocketGeomBody.vertices.push(nodeById[i2].position);
+                this.bodyVertices.push(nodeById[i1].position);
+                this.bodyVertices.push(nodeById[i2].position);
             }
         }
 
+        this.rocketGeomBody = new THREE.BufferGeometry();
+        this.rocketGeomBody.setAttribute(
+            'position', new THREE.BufferAttribute(new Float32Array(this.bodyVertices.length * 3), 3));
+
         recomputeGeom(this.rocketGeomBody);
 
-        this.rocketBody = new THREE.Line(this.rocketGeomBody, this.rocketMat, THREE.LinePieces);
+        this.rocketBody = new THREE.Line(this.rocketGeomBody, this.rocketMat);
         this.scene.add(this.rocketBody);
 
         this.massNodeVizs = [];
@@ -139,7 +144,7 @@ nu_crackleware_vtvlsim_Viz = function (
         this.scene.remove(this.rocketBody);
         this.scene.remove(this.thrustArrow);
         this.rocketGeomBody.dispose();
-        this.massNodeVizs.forEach(function (nv) { 
+        this.massNodeVizs.forEach(function (nv) {
             nv.remove();
         });
     };
@@ -151,7 +156,15 @@ nu_crackleware_vtvlsim_Viz = function (
             this.recreate();
         }
 
-        this.rocketGeomBody.verticesNeedUpdate = true;
+        {
+            var i = 0;
+            var arr = this.rocketGeomBody.attributes.position.array;
+            for (var v of this.bodyVertices) {
+                arr[i++] = v.x; arr[i++] = v.y; arr[i++] = v.z;
+            }
+            this.rocketGeomBody.attributes.position.needsUpdate = true;
+        }
+
         this.massNodeVizs.forEach(function (nv) {
             nv.update();
         });
@@ -160,8 +173,8 @@ nu_crackleware_vtvlsim_Viz = function (
             this.thrustArrow.visible = true;
             this.thrustArrow.children.forEach(function (obj) { obj.visible = true; }); // do we need this?
             var noise = this.thrustNoise ? 1.0-this.thrustNoise*Math.random() : 1.0;
-            Panels.updateArrow(this.thrustArrow, 
-                               this.rocket.bodyNodes[0].position, 
+            Panels.updateArrow(this.thrustArrow,
+                               this.rocket.bodyNodes[0].position,
                                this.rocket.bodyNodes[0].position.clone().add(
                                    this.rocket.thrust.clone().multiplyScalar(noise*200/this.rocket.maxThrustForce)));
         } else {
@@ -173,23 +186,22 @@ nu_crackleware_vtvlsim_Viz = function (
     var LocationHelper = this.LocationHelper = function (size, matopts) {
 	    size = size || 1;
         matopts = matopts || {};
-        if (matopts.color == undefined) matopts.color = 0x00ffff;
+        if (matopts.color == undefined) matopts.color = 0xffffff;
         if (matopts.linewidth == undefined) matopts.linewidth = 2;
 
-	    var geometry = new THREE.Geometry();
-
         size /= 2;
-	    geometry.vertices.push(
+        var vertices = [
 		    new THREE.Vector3(-size, 0, 0), new THREE.Vector3(size, 0, 0),
 		    new THREE.Vector3(0, -size, 0), new THREE.Vector3(0, size, 0),
 		    new THREE.Vector3(0, 0, -size), new THREE.Vector3(0, 0, size)
-	    );
+        ];
+	    var geometry = new THREE.BufferGeometry().setFromPoints(vertices);
 
 	    var material = new THREE.LineBasicMaterial(matopts);
 
-	    THREE.Line.call(this, geometry, material, THREE.LinePieces);
+	    THREE.Line.call(this, geometry, material);
     };
-    LocationHelper.prototype = Object.create(THREE.Line.prototype);
+    LocationHelper.prototype = Object.create(THREE.LineSegments.prototype);
 
     var ThrustControllerViz = this.ThrustControllerViz = function (thrustController, scene) {
         this.thrustController = thrustController;
@@ -204,7 +216,7 @@ nu_crackleware_vtvlsim_Viz = function (
     ThrustControllerViz.prototype.update = function () {
         if (this.thrustController.target != null) {
             this.locTarget.visible = true;
-            this.locTarget.position = this.thrustController.target;
+            this.locTarget.position.copy(this.thrustController.target);
         } else {
             this.locTarget.visible = false;
         }
@@ -233,7 +245,7 @@ nu_crackleware_vtvlsim_Viz = function (
             }
         }
 
-        this.graphAltitude = new Graph('alt', npoints, ["%.1f", "m"], 
+        this.graphAltitude = new Graph('alt', npoints, ["%.1f", "m"],
                                        {idxSteps: idxSteps, minRange: 1});
         this.graphAltitude.setGeometry(x, y, 80, 80);
         advancePos(this.graphAltitude);

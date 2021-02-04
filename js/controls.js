@@ -17,7 +17,8 @@ nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
 
     var pointerlockchange = function (event) {
         var elem = document.body;
-        pointerLocked = 
+        pointerLocked =
+            document.pointerLockElement === elem ||
             document.mozPointerLockElement === elem ||
             document.webkitPointerLockElement === elem;
         // console.log({pointerLocked: pointerLocked});
@@ -133,7 +134,7 @@ nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
         else velocity.x = 0.0;
 
 		camera.translateX( velocity.x );
-		camera.translateY( velocity.y ); 
+		camera.translateY( velocity.y );
 		camera.translateZ( velocity.z );
 	};
 

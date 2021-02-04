@@ -22,7 +22,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
             ctx.fill();
         } else {
             ctx.stroke();
-        }        
+        }
     }
 
     function drawTextWithOutline(ctx, txt, x, y) {
@@ -54,7 +54,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
         }
     }
 
-    var Instrument = this.Instrument = function (title, fmt, opts) { 
+    var Instrument = this.Instrument = function (title, fmt, opts) {
         this.title = title;
         this.fmt = fmt;
         this.opts = opts || {};
@@ -242,7 +242,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
         this.opts.verticalTitle = true;
 
         this.t = 0.0;
-        this.redrawPeriod = 
+        this.redrawPeriod =
             this.opts.maxv != undefined ? this.opts.maxv : 100; // ms
     }
 
@@ -269,7 +269,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
         }
     }
 
-    var Text = this.Text = function (title, opts) { 
+    var Text = this.Text = function (title, opts) {
         this.title = title;
         this.opts = opts || {};
 
@@ -301,11 +301,11 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
 
 
     var updateArrow = this.updateArrow = function (arrow, vFrom, vTo, col) {
-        if (vFrom instanceof Array) 
+        if (vFrom instanceof Array)
             vFrom = new THREE.Vector3(vFrom[0], vFrom[1], vFrom[2]);
-        if (vTo instanceof Array) 
+        if (vTo instanceof Array)
             vTo = new THREE.Vector3(vTo[0], vTo[1], vTo[2]);
-        arrow.position = vFrom;
+        arrow.position.copy(vFrom);
         var d = vTo.clone().sub(vFrom);
         arrow.setDirection(d.clone().normalize());
         var r = d.length() || 0.000001;
@@ -334,9 +334,9 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
 
     Dbg.prototype.remove = function (s) {
         this.textDebug.remove();
-        for (var label in this.arrows) 
+        for (var label in this.arrows)
             this.scene.remove(this.arrows[label]);
-        for (var label in this.graphs) 
+        for (var label in this.graphs)
             this.graphs[label].remove();
     };
 
@@ -374,7 +374,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
                 this.nextGraphX -= this.graphWidth;
             }
             graph = this.graphs[label] = new Graph(
-                label, this.graphWidth/2, ["%.4f", ""], 
+                label, this.graphWidth/2, ["%.4f", ""],
                 {idxSteps: idxSteps || 60, minRange: 1e-30});
             graph.setGeometry(this.nextGraphX, this.nextGraphY,
                               this.graphWidth, this.graphHeight);
@@ -383,7 +383,7 @@ nu_crackleware_vtvlsim_Panels = function (THREE, $) {
     };
 
     Dbg.prototype.draw = function () {
-        for (var label in this.graphs) 
+        for (var label in this.graphs)
             this.graphs[label].draw();
     };
 

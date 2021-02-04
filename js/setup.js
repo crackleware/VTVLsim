@@ -1,4 +1,4 @@
-nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $) {
+nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
     var scope = this;
 
     $("body").css("overflow", "hidden");
@@ -16,12 +16,12 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
     $container[0].style.background = 'rgb(96, 122, 190)';
     this.container = $container[0];
 
-    var renderer = Detector.webgl ? 
+    var renderer = ('WebGLRenderingContext' in window) ?
         new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
     // var renderer = new THREE.CanvasRenderer();
 
-    renderer.shadowMapEnabled = true;
-    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
 
     var stxt = '';
@@ -89,6 +89,7 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
     this.updateScene = null;
 
     var prev_timestep = null;
+    var dt_ = 0;
     function render(timestep) {
 	    requestAnimationFrame(render);
 
@@ -98,6 +99,14 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
             controls.update(dt);
         }
         prev_timestep = timestep;
+
+        dt_ += dt;
+        if (0 || dt_ >= 100) {
+            dt = dt_;
+            dt_ = 0;
+        } else {
+            return;
+        }
 
         scope.fps = dt == 0 ? 0 : 1000.0/dt;
 
@@ -111,8 +120,8 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
             if (scope.updateScene)
                 scope.updateScene(dt);
         } catch (e) {
-            console.log(e.stack); 
-            scope.updateScene = null; 
+            console.log(e.stack);
+            scope.updateScene = null;
         }
 
         renderer.render(scene, camera);
@@ -122,7 +131,7 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
 
     {
         var sky = this.sky = new THREE.Mesh(
-            new THREE.SphereGeometry(5000, 2*8, 2*6), 
+            new THREE.SphereGeometry(5000, 2*8, 2*6),
             new THREE.MeshBasicMaterial({color: 0xFFFFFF}));
         scene.add(sky);
         sky.material.side = THREE.BackSide;
@@ -143,13 +152,15 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, Detector, THREE, $
     }
 
     {
-        var size = 1000;
-        var step = 100;
-        var gridHelper = this.gridHelper = new THREE.GridHelper(size, step);
+        var size = 1900;
+        var step = 50;
+        var gridHelper = this.gridHelper = new THREE.GridHelper(
+            size, step,
+            0xffffff, 0x000000
+        );
         gridHelper.position = new THREE.Vector3(0, 0, 0);
-        gridHelper.setColors(0xffffff, 0x000000);
         gridHelper.material.transparent = true;
-        gridHelper.material.opacity = 0.5;
+        gridHelper.material.opacity = 0.2;
         scene.add(gridHelper);
     }
 

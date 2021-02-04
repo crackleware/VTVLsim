@@ -7,9 +7,9 @@ nu_crackleware_vtvlsim_Main = function (
     RocketGraphs,
     Slider,
 
-    Environment, 
-    Rocket, 
-    RocketViz, 
+    Environment,
+    Rocket,
+    RocketViz,
     Simulator,
 
     ThrustController,
@@ -25,7 +25,7 @@ nu_crackleware_vtvlsim_Main = function (
     this.Setup = Setup;
 
     if (0) {
-        try { Tests.testPhysicsSimulationAccuracy1({quiet: true}); } 
+        try { Tests.testPhysicsSimulationAccuracy1({quiet: true}); }
         catch (e) { console.log('warning: ' +e); }
     }
 
@@ -37,7 +37,7 @@ nu_crackleware_vtvlsim_Main = function (
 
     var rocketGraphs = new RocketGraphs({
         position: function () {
-            return rocket.topBodyNode.position.y; 
+            return rocket.topBodyNode.position.y;
         },
         velocity: function () {
             return rocket.topBodyNode.velocity.length();
@@ -49,15 +49,15 @@ nu_crackleware_vtvlsim_Main = function (
 
     var graphForce = this.graphForce = new Graph('force', 40, ["%.1f", "N"], {minRange: 1, idxSteps: 6});
     graphForce.setGeometry(80, 50, 80, 80);
-    graphForce.update = function () { 
+    graphForce.update = function () {
         graphForce.addData(env.forceMax);
         env.forceMax = 0;
     };
 
     var graphBroken = this.graphBroken = new Graph('broken', 40, ["%.0f", ""], {minv: 0, idxSteps: 30});
     graphBroken.setGeometry(160, 50, 80, 40);
-    graphBroken.update = function () { 
-        graphBroken.addData(rocket.brokenConstraintsCount()); 
+    graphBroken.update = function () {
+        graphBroken.addData(rocket.brokenConstraintsCount());
     };
 
     var graphFPS = this.graphFPS = new Graph('fps', 40, ["%.0f", ""], {minv: 0, maxv: 120, idxSteps: 30});
@@ -68,7 +68,7 @@ nu_crackleware_vtvlsim_Main = function (
     sliderThrust.setGeometry(80, 130, 40, 160);
 
     var thrustCtrl = this.thrustCtrl = new ThrustController(rocket, env);
-    var thrustCtrlViz = new ThrustControllerViz(thrustCtrl, Setup.scene);
+    var thrustCtrlViz = this.thrustCtrlViz = new ThrustControllerViz(thrustCtrl, Setup.scene);
     thrustCtrl.setTarget(new THREE.Vector3(50, 50, 0));
 
     var sim = this.sim = new Simulator(
@@ -141,15 +141,15 @@ nu_crackleware_vtvlsim_Main = function (
         }
 
         if (!this.simPaused) {
-            sim.update(dt*this.timeFactor, applyForces); 
+            sim.update(dt*this.timeFactor, applyForces);
 
             sliderThrust.value = rocket.thrust.length();
 
             if (!this.disablePanels) {
                 [rocketGraphs,
-                 graphForce, 
-                 graphBroken, 
-                 graphFPS, 
+                 graphForce,
+                 graphBroken,
+                 graphFPS,
                  sliderThrust
                 ].forEach(function (g) {
                      g.update(dt);
@@ -175,15 +175,15 @@ nu_crackleware_vtvlsim_Main = function (
         var containerWidth = $(document).width(),
             containerHeight = $(document).height();
 
-        var projector = new THREE.Projector();
-        var mouseVector = new THREE.Vector3(
+        var raycaster = new THREE.Raycaster();
+        var mouseVector = new THREE.Vector2(
             2 * (x / containerWidth) - 1,
-            1 - 2 * (y / containerHeight),
-            0);
-        var raycaster = projector.pickingRay(mouseVector.clone(), Setup.camera);
+            1 - 2 * (y / containerHeight));
+
+        raycaster.setFromCamera( mouseVector, Setup.camera );
 
         var plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-        var v = raycaster.ray.intersectPlane(plane);
+        var v = raycaster.ray.intersectPlane(plane, new THREE.Vector3());
         thrustCtrl.setTarget(v);
     }
 
