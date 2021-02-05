@@ -1,67 +1,69 @@
 nu_crackleware_vtvlsim_UI = function (
-    Setup, 
-    Main, 
-    Inspector, 
-    Instructions, 
+    Setup,
+    Main,
+    Inspector,
+    Instructions,
     $
 ) {
-    var scope = this;
+    const scope = this;
 
-    var Button = this.Button = function (label, css, click_cb) {
-        var style =
-            'color: rgb(213, 213, 213);'+
-            '-webkit-appearance: none;'+
-            'border-radius: 0px;'+
-            'margin: 0px;'+
-            'padding: 2px;'+ 
-            'white-space: normal;'+
-            'position: absolute;'+
-            css;
-        this.inputElement = $('<input type="button" value="'+label+'" style="'+style+'" class="vtvlsim-ui"></input>')[0];
-        $(document.body).append(this.inputElement);
-        this.inputElement.addEventListener('click', click_cb);
-        this.setActive(false);
+    scope.Button = class Button {
+        constructor(label, css, click_cb) {
+            const style =
+                'color: rgb(213, 213, 213);'+
+                '-webkit-appearance: none;'+
+                'border-radius: 0px;'+
+                'margin: 0px;'+
+                'padding: 2px;'+
+                'white-space: normal;'+
+                'position: absolute;'+
+                css;
+            this.inputElement = $('<input type="button" value="'+label+'" style="'+style+'" class="vtvlsim-ui"></input>')[0];
+            $(document.body).append(this.inputElement);
+            this.inputElement.addEventListener('click', click_cb);
+            this.setActive(false);
+        }
+
+        setActive(active) {
+            this.active = active;
+            $(this.inputElement).css(
+                'text-decoration', active ? 'underline' : '');
+        }
     }
 
-    Button.prototype.setActive = function (active) {
-        this.active = active;
-        $(this.inputElement).css(
-            'text-decoration', active ? 'underline' : '');
-    };
-
-    this.btnResetEverything = new Button(
+    scope.btnResetEverything = new scope.Button(
         'Reset everything',
         'background: rgb(141, 48, 48);'+
         'border: solid 1px rgb(214, 58, 58);'+
         'left: 0px; top: 0px; width: 80px; height: 50px',
-        function (evt) {
+        evt => {
             localStorage.clear();
-            setTimeout(function () {
+            setTimeout(() => {
                 window.location.reload();
             }, 100);
         }
     );
-    
-    this.btnRestart = new Button(
+
+    scope.btnRestart = new scope.Button(
         'Restart',
         'background: rgb(155, 81, 0);'+
         'border: solid 1px rgb(255, 142, 142);'+
         'left: 80px; top: 0px; width: 80px; height: 50px',
-        function (evt) {
+        evt => {
             Main.restart();
         }
     );
-    
-    this.inspector = null;
-    this.btnInspectMain = new Button(
+
+    scope.inspector = null;
+    scope.btnInspectMain = new scope.Button(
         'Inspect Main',
         'background: rgb(23, 104, 192);'+
         'border: solid 1px rgb(58, 214, 195);'+
         'left: 160px; top: 0px; width: 80px; height: 50px',
-        function (evt) {
+        evt => {
             if (!scope.inspector) {
                 scope.inspector = new Inspector(Main, 'Main', {
-                    close_cb: function () {
+                    close_cb: () => {
                         scope.inspector = null;
                         scope.btnInspectMain.setActive(false);
                     }});
@@ -74,12 +76,12 @@ nu_crackleware_vtvlsim_UI = function (
         }
     );
 
-    this.btnFreeLook = new Button(
+    scope.btnFreeLook = new scope.Button(
         'Free-Look',
         'background: rgb(23, 165, 192);'+
         'border: solid 1px rgb(58, 214, 195);'+
         'left: 240px; top: 0px; width: 80px; height: 50px',
-        function (evt) {
+        evt => {
             Setup.requestPointerLock();
         }
     );
@@ -88,16 +90,16 @@ nu_crackleware_vtvlsim_UI = function (
         $('#aiming_cross').css('display', active ? 'initial' : 'none');
     });
 
-    this.instructions = null;
-    this.btnInstructions = new Button(
+    scope.instructions = null;
+    scope.btnInstructions = new scope.Button(
         'Instructions',
         'background: rgb(57, 146, 45);'+
         'border: solid 1px rgb(210, 228, 0);'+
         'left: 320px; top: 0px; width: 80px; height: 50px',
-        function (evt) {
+        evt => {
             if (!scope.instructions) {
                 scope.instructions = new Instructions({
-                    close_cb: function () {
+                    close_cb: () => {
                         scope.instructions = null;
                         scope.btnInstructions.setActive(false);
                     }});

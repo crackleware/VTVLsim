@@ -20,22 +20,20 @@ nu_crackleware_vtvlsim_Main = function (
     THREE,
     $
 ) {
-    var scope = this;
-
-    this.Setup = Setup;
+    const scope = this;
 
     if (0) {
         try { Tests.testPhysicsSimulationAccuracy1({quiet: true}); }
         catch (e) { console.log('warning: ' +e); }
     }
 
-    var env = this.env = new Environment();
-    var rocket = this.rocket = new Rocket(env);
-    var rocketViz = this.rocketViz = new RocketViz(rocket, Setup.scene);
+    const env = this.env = new Environment();
+    const rocket = this.rocket = new Rocket(env);
+    const rocketViz = this.rocketViz = new RocketViz(rocket, Setup.scene);
 
-    var initialRocketState = rocket.saveState();
+    const initialRocketState = rocket.saveState();
 
-    var rocketGraphs = new RocketGraphs({
+    const rocketGraphs = new RocketGraphs({
         position: function () {
             return rocket.topBodyNode.position.y;
         },
@@ -47,31 +45,31 @@ nu_crackleware_vtvlsim_Main = function (
         }
     }, 0, 50);
 
-    var graphForce = this.graphForce = new Graph('force', 40, ["%.1f", "N"], {minRange: 1, idxSteps: 6});
+    const graphForce = this.graphForce = new Graph('force', 40, ["%.1f", "N"], {minRange: 1, idxSteps: 6});
     graphForce.setGeometry(80, 50, 80, 80);
     graphForce.update = function () {
         graphForce.addData(env.forceMax);
         env.forceMax = 0;
     };
 
-    var graphBroken = this.graphBroken = new Graph('broken', 40, ["%.0f", ""], {minv: 0, idxSteps: 30});
+    const graphBroken = this.graphBroken = new Graph('broken', 40, ["%.0f", ""], {minv: 0, idxSteps: 30});
     graphBroken.setGeometry(160, 50, 80, 40);
     graphBroken.update = function () {
         graphBroken.addData(rocket.brokenConstraintsCount());
     };
 
-    var graphFPS = this.graphFPS = new Graph('fps', 40, ["%.0f", ""], {minv: 0, maxv: 120, idxSteps: 30});
+    const graphFPS = this.graphFPS = new Graph('fps', 40, ["%.0f", ""], {minv: 0, maxv: 120, idxSteps: 30});
     graphFPS.setGeometry(400, 0, 80, 50);
     graphFPS.update = function () { graphFPS.addData(Setup.fps); };
 
-    var sliderThrust = this.sliderThrust = new Slider('thrust', ["%.1f", "N"], [0, 620e3]);
+    const sliderThrust = this.sliderThrust = new Slider('thrust', ["%.1f", "N"], [0, 620e3]);
     sliderThrust.setGeometry(80, 130, 40, 160);
 
-    var thrustCtrl = this.thrustCtrl = new ThrustController(rocket, env);
-    var thrustCtrlViz = this.thrustCtrlViz = new ThrustControllerViz(thrustCtrl, Setup.scene);
+    const thrustCtrl = this.thrustCtrl = new ThrustController(rocket, env);
+    const thrustCtrlViz = this.thrustCtrlViz = new ThrustControllerViz(thrustCtrl, Setup.scene);
     thrustCtrl.setTarget(new THREE.Vector3(50, 50, 0));
 
-    var sim = this.sim = new Simulator(
+    const sim = this.sim = new Simulator(
         [rocket, thrustCtrl],
         [rocketViz, thrustCtrlViz],
         env
@@ -102,17 +100,17 @@ nu_crackleware_vtvlsim_Main = function (
     this.disablePanels = false;
     this.timeFactor = 1; // >1 to speed up passage of time
 
-    var updateScene = function (dt) {
+    const updateScene = dt => {
         if (keys['P'.charCodeAt(0)]) this.simPaused = true;
         if (keys['O'.charCodeAt(0)]) this.simPaused = false;
         if (keys['C'.charCodeAt(0)]) this.cameraTracksRocket = true;
         if (keys['V'.charCodeAt(0)]) this.cameraTracksRocket = false;
 
         if (keys['T'.charCodeAt(0)]) {
-            var d = Setup.camera.localToWorld(new THREE.Vector3(0, 0, -1)).sub(Setup.camera.position).normalize();
-            var ray = new THREE.Ray(Setup.camera.position, d);
-            var plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-            var v = ray.intersectPlane(plane);
+            const d = Setup.camera.localToWorld(new THREE.Vector3(0, 0, -1)).sub(Setup.camera.position).normalize();
+            const ray = new THREE.Ray(Setup.camera.position, d);
+            const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+            const v = ray.intersectPlane(plane);
             thrustCtrl.setTarget(v);
         }
 
@@ -128,7 +126,7 @@ nu_crackleware_vtvlsim_Main = function (
         if (keys['G'.charCodeAt(0)]) {
             thrustCtrl.setTarget(null);
             thrustCtrl.resetInternals();
-            var v1 = this.rocket.topBodyNode.position.clone().sub(this.rocket.bodyNodes[0].position).normalize();
+            const v1 = this.rocket.topBodyNode.position.clone().sub(this.rocket.bodyNodes[0].position).normalize();
             if (v1.y > 0 && Math.abs(v1.x) < Math.abs(v1.y)) {
                 this.rocket.setThrust(
                     v1.clone().applyAxisAngle(new THREE.Vector3(0,0,1), Math.PI/8).
@@ -167,38 +165,38 @@ nu_crackleware_vtvlsim_Main = function (
         }
     };
 
-    Setup.updateScene = function (dt) { updateScene.bind(scope)(dt); }
+    Setup.updateScene = updateScene;
 
-    var applyForces = function (dt) { };
+    const applyForces = dt => { };
 
     function setTargetLocation(x, y) {
-        var containerWidth = $(document).width(),
-            containerHeight = $(document).height();
+        const containerWidth = $(document).width(),
+              containerHeight = $(document).height();
 
-        var raycaster = new THREE.Raycaster();
-        var mouseVector = new THREE.Vector2(
-            2 * (x / containerWidth) - 1,
-            1 - 2 * (y / containerHeight));
+        const raycaster = new THREE.Raycaster();
+        const mouseVector = new THREE.Vector2(
+              2 * (x / containerWidth) - 1,
+              1 - 2 * (y / containerHeight));
 
         raycaster.setFromCamera( mouseVector, Setup.camera );
 
-        var plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-        var v = raycaster.ray.intersectPlane(plane, new THREE.Vector3());
+        const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        const v = raycaster.ray.intersectPlane(plane, new THREE.Vector3());
         thrustCtrl.setTarget(v);
     }
 
-    var mouseDown = false;
+    scope.mouseDown = false;
     Setup.container.addEventListener('mousedown', function (event) {
-        mouseDown = true;
+        scope.mouseDown = true;
         if (!Setup.controls.pointerLocked) {
             setTargetLocation(event.pageX, event.pageY);
         }
     });
     Setup.container.addEventListener('mouseup', function (event) {
-        mouseDown = false;
+        scope.mouseDown = false;
     });
     Setup.container.addEventListener('mousemove', function (event) {
-        if (mouseDown) {
+        if (scope.mouseDown) {
             if (!Setup.controls.pointerLocked) {
                 setTargetLocation(event.pageX, event.pageY);
             }

@@ -1,30 +1,28 @@
 nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
-	var scope = this;
+	const scope = this;
 
 	var moveForward = false;
 	var moveBackward = false;
 	var moveLeft = false;
 	var moveRight = false;
 
-	var velocity = new THREE.Vector3();
+	const velocity = new THREE.Vector3();
 
-	var PI_2 = Math.PI / 2;
+	const PI_2 = Math.PI / 2;
 
-    var pointerLocked = false;
-    this.pointerLocked = false;
+    scope.pointerLocked = false;
 
-    this.pointerLockChangeCBs = [];
+    scope.pointerLockChangeCBs = [];
 
-    var pointerlockchange = function (event) {
-        var elem = document.body;
-        pointerLocked =
+    const pointerlockchange = function (event) {
+        const elem = document.body;
+        scope.pointerLocked =
             document.pointerLockElement === elem ||
             document.mozPointerLockElement === elem ||
             document.webkitPointerLockElement === elem;
-        // console.log({pointerLocked: pointerLocked});
-        scope.pointerLocked = pointerLocked;
-        scope.pointerLockChangeCBs.forEach(function (cb) {
-            cb(pointerLocked);
+        // console.log({pointerLocked: scope.pointerLocked});
+        scope.pointerLockChangeCBs.forEach(cb => {
+            cb(scope.pointerLocked);
         });
     };
 
@@ -32,25 +30,23 @@ nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
 	document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
 	document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
 
-	var onMouseMove = function ( event ) {
+	const onMouseMove = event => {
+		if (scope.enabled === false) return;
 
-		if ( scope.enabled === false ) return;
+        if (!scope.pointerLocked) return;
 
-        if (!pointerLocked) return;
+		const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+		const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-        var v1 = camera.localToWorld(new THREE.Vector3(1, 0, 0)).sub(camera.position);
-        var v2 = camera.localToWorld(new THREE.Vector3(0, 1, 0)).sub(camera.position);
-        var v3 = camera.localToWorld(new THREE.Vector3(0, 0, -1)).sub(camera.position);
+        const v1 = camera.localToWorld(new THREE.Vector3(1, 0, 0)).sub(camera.position);
+        const v2 = camera.localToWorld(new THREE.Vector3(0, 1, 0)).sub(camera.position);
+        const v3 = camera.localToWorld(new THREE.Vector3(0, 0, -1)).sub(camera.position);
         v3.applyAxisAngle(v1, movementY * -0.002);
         v3.applyAxisAngle(v2, movementX * -0.002);
         camera.lookAt(camera.position.clone().add(v3));
 	};
 
-	var onKeyDown = function ( event ) {
-
+	const onKeyDown = event => {
 		switch ( event.keyCode ) {
 
 			case 38: // up
@@ -71,12 +67,10 @@ nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
 			case 68: // d
 				moveRight = true;
 				break;
-
 		}
-
 	};
 
-	var onKeyUp = function ( event ) {
+	const onKeyUp = event => {
 		switch( event.keyCode ) {
 
 			case 38: // up
@@ -101,29 +95,27 @@ nu_crackleware_vtvlsim_PointerLockControls = function ( camera ) {
 
 			case 70: // f
                 {
-                    var element = document.body;
+                    const element = document.body;
                     element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
                     element.requestFullscreen();
                 }
 
 				break;
 		}
-
 	};
 
-	document.addEventListener( 'mousemove', onMouseMove, false );
-	document.addEventListener( 'keydown', onKeyDown, false );
-	document.addEventListener( 'keyup', onKeyUp, false );
+	document.addEventListener('mousemove', onMouseMove, false);
+	document.addEventListener('keydown', onKeyDown, false);
+	document.addEventListener('keyup', onKeyUp, false);
 
-	this.enabled = false;
+	scope.enabled = false;
 
-	this.update = function ( delta ) {
+	scope.update = delta => {
+		if (scope.enabled === false) return;
 
-		if ( scope.enabled === false ) return;
+        if (!scope.pointerLocked) return;
 
-        if (!pointerLocked) return;
-
-        var d = 3;
+        const d = 3;
 
 		if ( moveForward ) velocity.z = -d;
 		else if ( moveBackward ) velocity.z = +d;

@@ -1,22 +1,22 @@
 nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
-    var scope = this;
+    const scope = this;
 
     $("body").css("overflow", "hidden");
 
-    var WIDTH = $(document).width(),
-        HEIGHT = $(document).height();
+    const WIDTH = $(document).width(),
+          HEIGHT = $(document).height();
 
-    var VIEW_ANGLE = 45,
-        ASPECT = WIDTH / HEIGHT,
-        NEAR = 0.1,
-        FAR = 10000;
+    const VIEW_ANGLE = 45,
+          ASPECT = WIDTH / HEIGHT,
+          NEAR = 0.1,
+          FAR = 10000;
 
-    var $container = $('#container');
+    const $container = $('#container');
 
     $container[0].style.background = 'rgb(96, 122, 190)';
-    this.container = $container[0];
+    scope.container = $container[0];
 
-    var renderer = ('WebGLRenderingContext' in window) ?
+    const renderer = ('WebGLRenderingContext' in window) ?
         new THREE.WebGLRenderer() : new THREE.CanvasRenderer();
     // var renderer = new THREE.CanvasRenderer();
 
@@ -30,14 +30,11 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
     stxt += (renderer instanceof THREE.WebGLRenderer) ? 'webgl' : 'canvas';
     $('#status').text(stxt);
 
+    const camera = scope.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 
-    var camera = this.camera = new THREE.PerspectiveCamera(
-        VIEW_ANGLE, ASPECT, NEAR, FAR);
-
-
-    this.loadState = function () {
+    scope.loadState = function () {
         if (localStorage.camposrot) {
-            var a = JSON.parse(localStorage.camposrot);
+            const a = JSON.parse(localStorage.camposrot);
             camera.position.x = a[0];
             camera.position.y = a[1];
             camera.position.z = a[2];
@@ -50,9 +47,9 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
             camera.position.z = 200;
         }
     }
-    this.loadState();
+    scope.loadState();
 
-    this.saveState = function () {
+    scope.saveState = function () {
         localStorage.camposrot = JSON.stringify([
             camera.position.x,
             camera.position.y,
@@ -62,10 +59,9 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
             camera.rotation.z
         ]);
     };
-    setInterval(this.saveState, 5000);
+    setInterval(scope.saveState, 5000);
 
-
-    var scene = this.scene = new THREE.Scene();
+    const scene = scope.scene = new THREE.Scene();
 
     renderer.setSize(WIDTH, HEIGHT);
 
@@ -73,11 +69,11 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
 
     scene.add(camera);
 
-    var controls = this.controls = new PointerLockControls(camera);
+    const controls = scope.controls = new PointerLockControls(camera);
     controls.enabled = true;
 
-    this.requestPointerLock = function () {
-        var element = document.body;
+    scope.requestPointerLock = function () {
+        const element = document.body;
         element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
         element.requestPointerLock();
     };
@@ -86,7 +82,7 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
     //     scope.requestPointerLock();
     // });
 
-    this.updateScene = null;
+    scope.updateScene = null;
 
     var prev_timestep = null;
     var dt_ = 0;
@@ -130,18 +126,18 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
 
 
     {
-        var sky = this.sky = new THREE.Mesh(
+        var sky = scope.sky = new THREE.Mesh(
             new THREE.SphereGeometry(5000, 2*8, 2*6),
             new THREE.MeshBasicMaterial({color: 0xFFFFFF}));
         scene.add(sky);
         sky.material.side = THREE.BackSide;
         sky.material.map = THREE.ImageUtils.loadTexture('sky2.png');
-        this.skyEnabled = true;
+        scope.skyEnabled = true;
     }
 
     {
-        var gndmat = new THREE.MeshBasicMaterial({color: 0x989d09});
-        var gndplane = this.gndplane = new THREE.Mesh(
+        const gndmat = new THREE.MeshBasicMaterial({color: 0x989d09});
+        const gndplane = scope.gndplane = new THREE.Mesh(
             new THREE.PlaneGeometry(2*1000, 2*1000), gndmat);
         gndplane.rotation.x = -Math.PI/2;
         gndplane.position.y = -1;
@@ -152,9 +148,9 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
     }
 
     {
-        var size = 1900;
-        var step = 50;
-        var gridHelper = this.gridHelper = new THREE.GridHelper(
+        const size = 1900;
+        const step = 50;
+        const gridHelper = scope.gridHelper = new THREE.GridHelper(
             size, step,
             0xffffff, 0x000000
         );
@@ -165,11 +161,11 @@ nu_crackleware_vtvlsim_Setup = function (PointerLockControls, THREE, $) {
     }
 
     {
-        var sun = this.sun = new THREE.DirectionalLight( 0xFFFFFF, 0.3 );
+        const sun = scope.sun = new THREE.DirectionalLight( 0xFFFFFF, 0.3 );
         sun.position.set(500, 500, 0);
         scene.add(sun);
 
-        var ambient = this.ambient = new THREE.AmbientLight( 0xaaaaaa );
+        const ambient = scope.ambient = new THREE.AmbientLight( 0xaaaaaa );
         scene.add(ambient);
     }
 
